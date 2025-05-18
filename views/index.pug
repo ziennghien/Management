@@ -184,15 +184,14 @@ block content
           const traList = TRA_LIST.slice(0, 9);
           const tcList = TRA_LIST.slice(9);
 
-          traList.forEach(loaiTra => {
-            const records = caData['Ca 1'].filter(e => e.traSo.toLowerCase() === loaiTra);
-            const total = records.reduce((sum, r) => sum + (r.soLuong || 0), 0);
-            if (total > 0) {
-              const lit = (total * 0.8).toFixed(1);
-              result += `• Trà ${loaiTra} nấu ${total} gram → ${lit} lít\n`;
-            }
-          });
+          // ✅ Thêm dòng này để khai báo "records"
+          const records = caData['Ca 1'].filter(e => traList.includes(e.traSo.toLowerCase()));
 
+          if (records.length > 0) {
+            records.forEach(r => {
+              result += `• Trà ${r.traSo} nấu ${r.soLuong} gram → ${r.thanhPham} lít\n`;
+            });
+          }
           ['Ca 2', 'Ca 3'].forEach(ca => {
             result += `${ca}:\n`;
             traList.forEach(loaiTra => {
