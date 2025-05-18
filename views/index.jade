@@ -1,0 +1,270 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  form#dailyForm
+    label(for="date") Chọn ngày:
+    input(type="date", name="date", id="date", required=true)
+
+    .shift-wrapper
+      each ca in ['Ca 1', 'Ca 2', 'Ca 3']
+        .shift-column(data-ca=ca)
+          h3= ca
+          .entry-container
+          button(type="button", onclick="addRow(this)", class="add-row") ➕ Thêm dòng mới
+
+    button(type="button", onclick="exportData()", style="margin-top: 20px") 📤 Xuất dữ liệu
+    pre#exportResult(style="white-space: pre-wrap; margin-top: 15px; background: #f4f4f4; padding: 10px; border-radius: 5px")
+    button(type="button", onclick="copyExportResult()", style="margin-top: 10px") 📋 Copy kết quả
+
+  script.
+    document.addEventListener('DOMContentLoaded', async function () {
+      const dateInput = document.getElementById('date');
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+      dateInput.addEventListener('change', () => loadDataForDate(dateInput.value));
+      await loadDataForDate(today);
+    });
+
+    function getCurrentTimeHHMM() {
+      const now = new Date();
+      return now.toTimeString().slice(0, 5);
+    }
+
+    const TRA_LIST = [
+      'số 1', 'số 2', 'số 3', 'số 4', 'số 5', 'số 6',
+      'crane', 'lipton', 'cafe', 'trân châu trà', 'trân châu đen'
+    ];
+
+    function createTraSelect(selected) {
+      const select = document.createElement('select');
+      select.required = true;
+      TRA_LIST.forEach(text => {
+        const option = document.createElement('option');
+        option.value = text;
+        option.textContent = text;
+        if (selected === text) option.selected = true;
+        select.appendChild(option);
+      });
+      return select;
+    }
+
+    function addRow(button) {
+      const container = button.previousElementSibling;
+      const ca = button.parentNode.getAttribute('data-ca');
+      const date = document.getElementById('date').value;
+
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+
+      const traSelect = createTraSelect();
+
+      const soLuongInput = document.createElement('input');
+      soLuongInput.type = 'number';
+      soLuongInput.placeholder = 'Số lượng';
+      soLuongInput.min = 0;
+
+      const thanhPhamInput = document.createElement('input');
+      thanhPhamInput.placeholder = 'Thành phẩm';
+
+      const timeInput = document.createElement('input');
+      timeInput.type = 'time';
+      timeInput.value = getCurrentTimeHHMM();
+
+      const saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.textContent = '➕';
+      saveBtn.style.marginLeft = '5px';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = '🗑';
+      deleteBtn.style.marginLeft = '5px';
+
+      row.append(traSelect, soLuongInput, thanhPhamInput, timeInput, saveBtn, deleteBtn);
+      container.appendChild(row);
+
+      saveBtn.addEventListener('click', () => {
+        const data = {
+          ca, ngay: date,
+          traSo: traSelect.value,
+          soLuong: parseFloat(soLuongInput.value),
+          thanhPham: thanhPhamInput.value,
+          thoiGian: timeInput.value
+        };
+        if (!data.traSo || !data.thanhPham || !data.thoiGian || isNaN(data.soLuong)) {
+          alert("Vui lòng nhập đầy đủ thông tin");
+          return;
+        }
+        const ref = firebase.database().ref('daily_records').push();
+        ref.set(data).then(() => {
+          row.setAttribute('data-id', ref.key);
+          saveBtn.style.display = 'none';
+        });
+      });
+
+      deleteBtn.addEventListener('click', () => {
+        const id = row.getAttribute('data-id');
+        if (id) firebase.database().ref('daily_records/' + id).remove();
+        row.remove();
+      });
+    }
+
+    async function loadDataForDate(date) {
+      document.querySelectorAll('.entry-container').forEach(c => c.innerHTML = '');
+      try {
+        const snapshot = await firebase.database().ref('daily_records')
+          .orderByChild('ngay')
+          .equalTo(date)
+          .get();
+        const data = snapshot.val();
+        if (!data) return;
+
+        Object.entries(data).forEach(([id, item]) => {
+          const container = document.querySelector(`[data-ca="${item.ca}"] .entry-container`);
+          if (!container) return;
+
+          const row = document.createElement('div');
+          row.className = 'entry-row';
+          row.setAttribute('data-id', id);
+
+          const traSelect = createTraSelect(item.traSo);
+
+          const soLuongInput = document.createElement('input');
+          soLuongInput.type = 'number';
+          soLuongInput.value = item.soLuong;
+          soLuongInput.step = "any"; // cho phép nhập số thập phân
+
+          const thanhPhamInput = document.createElement('input');
+          thanhPhamInput.value = item.thanhPham;
+
+          const timeInput = document.createElement('input');
+          timeInput.type = 'time';
+          timeInput.value = item.thoiGian || getCurrentTimeHHMM();
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.textContent = '🗑';
+          deleteBtn.style.marginLeft = '5px';
+
+          deleteBtn.addEventListener('click', () => {
+            firebase.database().ref('daily_records/' + id).remove();
+            row.remove();
+          });
+
+          row.append(traSelect, soLuongInput, thanhPhamInput, timeInput, deleteBtn);
+          container.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Lỗi khi load dữ liệu:", err);
+      }
+    }
+
+    function exportData() {
+      const date = document.getElementById('date').value;
+      firebase.database().ref('daily_records')
+        .orderByChild('ngay')
+        .equalTo(date)
+        .get()
+        .then(snapshot => {
+          const data = snapshot.val();
+          if (!data) {
+            document.getElementById('exportResult').textContent = 'Không có dữ liệu cho ngày đã chọn.';
+            return;
+          }
+
+          const caData = { 'Ca 1': [], 'Ca 2': [], 'Ca 3': [] };
+          Object.values(data).forEach(entry => {
+            if (caData[entry.ca]) caData[entry.ca].push(entry);
+          });
+
+          let result = '1) SỐ LƯỢNG NẤU TRÀ\nCa 1:\n';
+          const traList = TRA_LIST.slice(0, 9);
+          const tcList = TRA_LIST.slice(9);
+
+          traList.forEach(loaiTra => {
+            const records = caData['Ca 1'].filter(e => e.traSo.toLowerCase() === loaiTra);
+            const total = records.reduce((sum, r) => sum + (r.soLuong || 0), 0);
+            if (total > 0) {
+              const lit = (total * 0.8).toFixed(1);
+              result += `• Trà ${loaiTra} nấu ${total} gram → ${lit} lít\n`;
+            }
+          });
+
+          ['Ca 2', 'Ca 3'].forEach(ca => {
+            result += `${ca}:\n`;
+            traList.forEach(loaiTra => {
+              const records = caData[ca].filter(e => e.traSo.toLowerCase() === loaiTra);
+              records.forEach(r => {
+                const lit = (r.soLuong * 0.8).toFixed(1);
+                result += `• Trà ${r.traSo} nấu thêm: ${r.soLuong} gram → ${lit} lít (lúc ${r.thoiGian})\n`;
+              });
+            });
+          });
+
+          result += '\n________________________________________\n';
+          result += '2) SỐ LƯỢNG NẤU TRÂN CHÂU TRÀ, TC ĐEN\nCa 1:\n';
+          tcList.forEach(tc => {
+            const records = caData['Ca 1'].filter(e => e.traSo.toLowerCase() === tc);
+            const total = records.reduce((sum, r) => sum + (r.soLuong || 0), 0);
+            if (total > 0) {
+              const portion = Math.floor(total / 50);
+              result += `• ${tc} nấu ${total} gram → thành phẩm ${portion} phần\n`;
+            }
+          });
+
+          ['Ca 2', 'Ca 3'].forEach(ca => {
+            result += `${ca}:\n`;
+            tcList.forEach(tc => {
+              const records = caData[ca].filter(e => e.traSo.toLowerCase() === tc);
+              records.forEach(r => {
+                result += `• ${tc} nấu thêm: ${r.soLuong} gram (lúc ${r.thoiGian})\n`;
+              });
+            });
+          });
+
+          document.getElementById('exportResult').textContent = result;
+        })
+        .catch(err => {
+          console.error('Lỗi xuất dữ liệu:', err);
+          document.getElementById('exportResult').textContent = 'Đã xảy ra lỗi khi xuất dữ liệu.';
+        });
+    }
+
+    function copyExportResult() {
+      const output = document.getElementById('exportResult').textContent;
+      navigator.clipboard.writeText(output)
+        .then(() => alert("Đã copy vào clipboard!"))
+        .catch(err => alert("Không thể copy: " + err));
+    }
+
+  style.
+    .shift-wrapper {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .shift-column {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .entry-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .entry-row input,
+    .entry-row select {
+      flex: 1;
+      padding: 4px;
+    }
+    .add-row {
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }

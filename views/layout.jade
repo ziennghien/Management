@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js")
+    script(src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js")
+    script(src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js")
+    script.
+      const firebaseConfig = {
+        apiKey: "AIzaSyCxy0PDIbtOTWE2vr-8IWd4zTQqvguWleY",
+        authDomain: "management-8d476.firebaseapp.com",
+        databaseURL: "https://management-8d476-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "management-8d476",
+        storageBucket: "management-8d476.appspot.com",
+        messagingSenderId: "598052119527",
+        appId: "1:598052119527:web:c5fd554144afb3710bd342",
+        measurementId: "G-M74XNWP521"
+      };
+      firebase.initializeApp(firebaseConfig);
+
+  body
+    block content
