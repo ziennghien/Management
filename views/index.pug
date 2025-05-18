@@ -204,22 +204,26 @@ block content
 
           result += '\n________________________________________\n';
           result += '2) SỐ LƯỢNG NẤU TRÂN CHÂU TRÀ, TC ĐEN\nCa 1:\n';
+          // Ca 1 - trân châu
           tcList.forEach(tc => {
             const records = caData['Ca 1'].filter(e => e.traSo.toLowerCase() === tc);
-            const total = records.reduce((sum, r) => sum + (r.soLuong || 0), 0);
-            if (total > 0) {
-              const portion = Math.floor(total / 50);
-              result += `• ${tc} nấu ${total} gram → thành phẩm ${portion} phần\n`;
+            if (records.length > 0) {
+              records.forEach(r => {
+                result += `• ${tc} nấu ${r.soLuong} gram → thành phẩm ${r.thanhPham} phần (lúc ${r.thoiGian})\n`;
+              });
             }
           });
 
+          // Ca 2, Ca 3 - trân châu
           ['Ca 2', 'Ca 3'].forEach(ca => {
             result += `${ca}:\n`;
             tcList.forEach(tc => {
               const records = caData[ca].filter(e => e.traSo.toLowerCase() === tc);
-              records.forEach(r => {
-                result += `• ${tc} nấu thêm: ${r.soLuong} gram (lúc ${r.thoiGian})\n`;
-              });
+              if (records.length > 0) {
+                records.forEach(r => {
+                  result += `• ${tc} nấu thêm: ${r.soLuong} gram → thành phẩm ${r.thanhPham} phần (lúc ${r.thoiGian})\n`;
+                });
+              }
             });
           });
 
