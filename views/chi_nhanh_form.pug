@@ -14,7 +14,9 @@ block content
         strong gram
         | . Thành phẩm được tính theo 
         strong lít
-        | . Thời gian nấu trà và trân châu ca 1 không để trong báo cáo nên có thể để theo mặc định.
+        | . Thời gian nấu trà và trân châu 
+        strong ca 1 không
+        |  để trong báo cáo nên có thể để theo mặc định.
     .shift-wrapper
       each ca in ['Ca 1', 'Ca 2', 'Ca 3']
         .shift-column(data-ca=ca)
@@ -30,7 +32,7 @@ block content
     const BRANCH = !{JSON.stringify(branch)};
     document.addEventListener('DOMContentLoaded', async function () {
       const dateInput = document.getElementById('date');
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA');
       dateInput.value = today;
       dateInput.addEventListener('change', () => loadDataForDate(dateInput.value));
       await loadDataForDate(today);
