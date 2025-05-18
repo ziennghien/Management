@@ -189,7 +189,7 @@ block content
 
           if (records.length > 0) {
             records.forEach(r => {
-              result += `• Trà ${r.traSo} nấu ${r.soLuong} gram → ${r.thanhPham} lít\n`;
+              result += `• Trà ${r.traSo} nấu ${r.soLuong} gram → ${r.thanhPham} lít (lúc ${r.thoiGian})\n`;
             });
           }
           ['Ca 2', 'Ca 3'].forEach(ca => {
@@ -197,8 +197,7 @@ block content
             traList.forEach(loaiTra => {
               const records = caData[ca].filter(e => e.traSo.toLowerCase() === loaiTra);
               records.forEach(r => {
-                const lit = (r.soLuong * 0.8).toFixed(1);
-                result += `• Trà ${r.traSo} nấu thêm: ${r.soLuong} gram → ${lit} lít (lúc ${r.thoiGian})\n`;
+                result += `• Trà ${r.traSo} nấu thêm: ${r.soLuong} gram → ${r.thanhPham} lít (lúc ${r.thoiGian})\n`;
               });
             });
           });
