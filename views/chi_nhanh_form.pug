@@ -317,7 +317,8 @@ block content
 
     .entry-row {
       display: flex;
-      flex-wrap: nowrap;
+      flex-wrap: nowrap;         /* ✅ luôn nằm trên 1 dòng */
+      overflow-x: auto; 
       gap: 8px;
       margin-bottom: 10px;
       align-items: center;
