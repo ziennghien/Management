@@ -19,6 +19,13 @@ block content
         | . Thời gian nấu trà và trân châu 
         strong ca 1 không
         |  để trong báo cáo nên có thể để theo mặc định.
+    p(style="font-style: italic; color: #777; font-size: 13px; margin-top: 5px")
+        | ⛔ Trân châu nấu ở 
+        strong Ca 2
+        |  và 
+        strong Ca 3
+        |  không cần điền thành phẩm, hệ thống sẽ tự bỏ qua khi xuất báo cáo.
+
     .shift-wrapper
       each ca in ['Ca 1', 'Ca 2', 'Ca 3']
         .shift-column(data-ca=ca)
@@ -106,9 +113,23 @@ block content
           thanhPham: thanhPhamInput.value,
           thoiGian: timeInput.value
         };
-        if (!data.traSo || !data.thanhPham || !data.thoiGian || isNaN(data.soLuong)) {
-          alert("Vui lòng nhập đầy đủ thông tin");
-          return;
+        if(data.ca == "Ca 1"){
+          if (!data.traSo || !data.thanhPham || !data.thoiGian || isNaN(data.soLuong)) {
+            alert("Vui lòng nhập đầy đủ thông tin");
+            return;
+          }
+        }else{
+          if( data.traSo == "trân châu đen" || data.traSo == "trân châu trà"){
+            if (!data.traSo || !data.thoiGian || isNaN(data.soLuong)) {
+              alert("Vui lòng nhập đầy đủ thông tin");
+              return;
+            }
+          } else{
+            if (!data.traSo || !data.thanhPham || !data.thoiGian || isNaN(data.soLuong)) {
+              alert("Vui lòng nhập đầy đủ thông tin");
+              return;
+            }
+          }
         }
         const ref = firebase.database().ref(`${BRANCH}`).push();
         ref.set(data).then(() => {
@@ -235,7 +256,7 @@ block content
               const records = caData[ca].filter(e => e.traSo.toLowerCase() === tc);
               if (records.length > 0) {
                 records.forEach(r => {
-                  result += `• ${tc} nấu thêm: ${r.soLuong} gram → thành phẩm ${r.thanhPham} phần (lúc ${r.thoiGian})\n`;
+                  result += `• ${tc} nấu thêm: ${r.soLuong} gram (lúc ${r.thoiGian})\n`;
                 });
               }
             });
