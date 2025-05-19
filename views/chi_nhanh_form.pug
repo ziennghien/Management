@@ -300,15 +300,14 @@ block content
       }
 
       .shift-column {
-        flex: 1 1 300px;     /* ✅ mỗi cột chiếm tối thiểu 300px, tự co giãn */
-        max-width: 33%;
+        flex: 1 1 32%;
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 8px;
         box-sizing: border-box;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 768px) {
         .shift-column {
           flex: 1 1 100%;     /* ✅ trên mobile: xuống dòng dọc */
           max-width: 100%;
