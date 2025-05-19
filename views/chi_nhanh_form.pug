@@ -307,6 +307,14 @@ block content
         border-radius: 8px;
         box-sizing: border-box;
       }
+
+      @media (max-width: 900px) {
+        .shift-column {
+          flex: 1 1 100%;     /* ✅ trên mobile: xuống dòng dọc */
+          max-width: 100%;
+        }
+      }
+
     .entry-row {
       display: flex;
       flex-wrap: nowrap;
