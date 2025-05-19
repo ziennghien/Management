@@ -308,9 +308,10 @@ block content
         box-sizing: border-box;
       }
 
-      @media (max-width: 900px) {
+        /* ✅ MOBILE FIX */
+      @media (max-width: 768px) {
         .shift-column {
-          flex: 1 1 100%;     /* ✅ trên mobile: xuống dòng dọc */
+          flex: 1 1 100%;
           max-width: 100%;
         }
       }
