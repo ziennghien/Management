@@ -139,6 +139,9 @@ block content
       });
 
       deleteBtn.addEventListener('click', () => {
+        const confirmDelete = confirm("⚠️ Bạn có chắc chắn muốn xóa dòng này không?\nThao tác này không thể hoàn tác.");
+        if (!confirmDelete) return;
+
         const id = row.getAttribute('data-id');
         if (id) firebase.database().ref(`${BRANCH}/` + id).remove();
         row.remove();
@@ -276,31 +279,70 @@ block content
         .then(() => alert("Đã copy vào clipboard!"))
         .catch(err => alert("Không thể copy: " + err));
     }
+    window.addEventListener('beforeunload', function (e) {
+      const unsavedRows = document.querySelectorAll('.entry-row:not([data-id])');
+      if (unsavedRows.length > 0) {
+        const warning = 'Bạn có dòng dữ liệu chưa lưu. Nếu thoát trang, dữ liệu đó sẽ bị mất.';
+        e.preventDefault();
+        e.returnValue = warning; // hiển thị cảnh báo
+        return warning;
+      }
+    });
+
 
   style.
-    .shift-wrapper {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .shift-column {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
+      .shift-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .shift-column {
+        flex: 1 1 300px;     /* ✅ mỗi cột chiếm tối thiểu 300px, tự co giãn */
+        max-width: 33%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+
+      @media (max-width: 900px) {
+        .shift-column {
+          flex: 1 1 100%;     /* ✅ trên mobile: xuống dòng dọc */
+          max-width: 100%;
+        }
+      }
+
     .entry-row {
       display: flex;
+      flex-wrap: nowrap;
       gap: 8px;
       margin-bottom: 10px;
       align-items: center;
     }
-    .entry-row input,
+
     .entry-row select {
-      flex: 1;
-      padding: 4px;
+      width: 120px; /* trà số mấy */
     }
+
+    .entry-row input[type="number"] {
+      width: 80px; /* số lượng */
+    }
+
+    .entry-row input:not([type="number"]):not([type="time"]) {
+      width: 80px; /* thành phẩm */
+    }
+
+    .entry-row input[type="time"] {
+      width: 100px;
+    }
+
+    .entry-row button {
+      flex-shrink: 0;
+    }
+
     .add-row {
       margin-top: 5px;
       margin-bottom: 10px;
