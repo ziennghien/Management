@@ -186,9 +186,13 @@ block content
           deleteBtn.style.marginLeft = '5px';
 
           deleteBtn.addEventListener('click', () => {
+            const confirmDelete = confirm("⚠️ Bạn có chắc chắn muốn xóa dòng này không?\nThao tác này không thể hoàn tác.");
+            if (!confirmDelete) return;
+
             firebase.database().ref(`${BRANCH}/` + id).remove();
             row.remove();
           });
+
 
           row.append(traSelect, soLuongInput, thanhPhamInput, timeInput, deleteBtn);
           container.appendChild(row);
